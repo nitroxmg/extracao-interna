@@ -655,9 +655,10 @@ function renderSummary() {
     emailjs.init('os1G4lc28KQbrYFPc');
     emailjs.send('service_trdirsl', '2js7vm7', {
       to_email: email,
-      subject: 'Extração Interna — Dias & Oliveira Advogados',
-      message: buildText(),
-      date: new Date().toLocaleDateString('pt-BR')
+      title: 'Extração Interna — Dias & Oliveira Advogados',
+      name: 'Dias & Oliveira Advogados',
+      time: new Date().toLocaleDateString('pt-BR'),
+      message: buildText()
     }).then(() => {
       status.style.color = '#0F6E56';
       status.textContent = 'Email enviado com sucesso para ' + email;
