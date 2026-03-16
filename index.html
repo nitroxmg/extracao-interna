@@ -662,22 +662,45 @@ function renderSummary() {
     });
 
     try {
-      const res = await fetch(WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: 'Extração — Dias & Oliveira — ' + date,
-          date: date,
-          content: content
-        })
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = WEBHOOK;
+      form.target = 'hidden_iframe';
+      form.enctype = 'application/x-www-form-urlencoded';
+
+      const fields = {
+        title: 'Extração — Dias & Oliveira — ' + date,
+        date: date,
+        content: content
+      };
+
+      Object.entries(fields).forEach(([k, v]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = k;
+        input.value = v;
+        form.appendChild(input);
       });
-      if (res.ok) {
+
+      let iframe = document.getElementById('hidden_iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.name = 'hidden_iframe';
+        iframe.id = 'hidden_iframe';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+      }
+
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+
+      setTimeout(() => {
         status.style.color = '#0F6E56';
         status.textContent = 'Salvo no Notion com sucesso!';
         btn.textContent = 'Salvo!';
-      } else {
-        throw new Error('Erro ' + res.status);
-      }
+      }, 1500);
+
     } catch(err) {
       status.style.color = '#c0392b';
       status.textContent = 'Erro: ' + err.message;
