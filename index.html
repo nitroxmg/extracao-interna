@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Extração Interna — Dias & Oliveira Advogados</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root {
     --cream: #F5F2EC;
@@ -601,13 +602,21 @@ function renderSummary() {
     });
     html += `</div>`;
   });
-  html += `<div style="display:flex;gap:10px;margin-top:2.5rem;flex-wrap:wrap;">
-    <button class="btn-copy" id="bcp">Copiar tudo</button>
-    <button class="btn-restart" id="brs">Nova sessão</button>
+  html += `
+  <div style="margin-top:2.5rem;border:0.5px solid var(--border-strong);border-radius:4px;padding:1.5rem;background:#fff;">
+    <div style="font-size:13px;font-weight:500;margin-bottom:0.3rem;">Enviar respostas por email</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:1rem;font-weight:300;">As respostas serão enviadas para o endereço abaixo.</div>
+    <input type="email" id="email-dest" placeholder="seu@email.com" style="width:100%;border:0.5px solid var(--border-strong);border-radius:4px;padding:10px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--dark);background:var(--cream);outline:none;margin-bottom:10px;" />
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn-next" id="bsend">Enviar por email</button>
+      <button class="btn-copy" id="bcp">Copiar tudo</button>
+      <button class="btn-restart" id="brs">Nova sessão</button>
+    </div>
+    <div id="email-status" style="margin-top:10px;font-size:13px;"></div>
   </div>`;
   document.getElementById('card').innerHTML = html;
 
-  document.getElementById('bcp').addEventListener('click', () => {
+  function buildText() {
     let txt = 'EXTRAÇÃO INTERNA — DIAS & OLIVEIRA ADVOGADOS 2025\n' + '='.repeat(40) + '\n\n';
     secs.forEach(sec => {
       const items = Q.map((q,i) => ({...q,idx:i})).filter(q => q.s===sec && ans[q.idx]!==null && ans[q.idx]!==undefined);
@@ -619,10 +628,46 @@ function renderSummary() {
         txt += `${q.q}\n${aStr}\n\n`;
       });
     });
-    navigator.clipboard.writeText(txt).then(() => {
+    return txt;
+  }
+
+  document.getElementById('bcp').addEventListener('click', () => {
+    navigator.clipboard.writeText(buildText()).then(() => {
       const b = document.getElementById('bcp');
       b.textContent = 'Copiado!';
       setTimeout(() => b.textContent = 'Copiar tudo', 2000);
+    });
+  });
+
+  document.getElementById('bsend').addEventListener('click', () => {
+    const email = document.getElementById('email-dest').value.trim();
+    const status = document.getElementById('email-status');
+    if (!email || !email.includes('@')) {
+      status.style.color = '#c0392b';
+      status.textContent = 'Por favor insira um email válido.';
+      return;
+    }
+    const btn = document.getElementById('bsend');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+    status.textContent = '';
+
+    emailjs.init('os1G4lc28KQbrYFPc');
+    emailjs.send('service_trdirsl', '2js7vm7', {
+      to_email: email,
+      subject: 'Extração Interna — Dias & Oliveira Advogados',
+      message: buildText(),
+      date: new Date().toLocaleDateString('pt-BR')
+    }).then(() => {
+      status.style.color = '#0F6E56';
+      status.textContent = 'Email enviado com sucesso para ' + email;
+      btn.textContent = 'Enviado!';
+    }).catch((err) => {
+      status.style.color = '#c0392b';
+      status.textContent = 'Erro ao enviar. Verifique as configurações do EmailJS.';
+      btn.textContent = 'Enviar por email';
+      btn.disabled = false;
+      console.error(err);
     });
   });
 
