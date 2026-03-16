@@ -282,7 +282,7 @@ function render() {
   }
 
   document.getElementById('bn').addEventListener('click', saveAndGo);
-  document.getElementById('bs').addEventListener('click', function() { cur++; render(); });
+  document.getElementById('bs').addEventListener('click', function() { saveAndGo(); });
   var bb = document.getElementById('bb');
   if (bb) bb.addEventListener('click', function() { cur--; render(); });
 }
